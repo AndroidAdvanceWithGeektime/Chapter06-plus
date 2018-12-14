@@ -109,6 +109,12 @@ hook_plt_method("libart.so", "pthread_create", (hook_func) &pthread_create_hook)
 
 ```
 
+而pthread_create的参数直接查看[pthread.h](http://androidxref.com/9.0.0_r3/xref/bionic/libc/include/pthread.h)就可以了。
+
+```
+int pthread_create(pthread_t* __pthread_ptr, pthread_attr_t const* __attr, void* (*__start_routine)(void*), void*);
+```
+
 获取堆栈是在native反射Java的方法
 
 ```
