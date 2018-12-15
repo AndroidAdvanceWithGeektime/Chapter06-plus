@@ -24,7 +24,7 @@ std::atomic<bool> thread_hooked;
 
 static jclass kJavaClass;
 static jmethodID kMethodGetStack;
-static JNIEnv *jniEnv;
+static JavaVM *kJvm;
 
 
 char *jstringToChars(JNIEnv *env, jstring jstr) {
@@ -40,6 +40,8 @@ char *jstringToChars(JNIEnv *env, jstring jstr) {
 }
 
 void printJavaStack() {
+    JNIEnv* jniEnv = NULL;
+    kJvm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6);
     jstring java_stack = static_cast<jstring>(jniEnv->CallStaticObjectMethod(kJavaClass, kMethodGetStack));
     if (NULL == java_stack) {
         return;
@@ -84,21 +86,39 @@ void enableThreadHook() {
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_dodola_thread_ThreadHook_enableThreadHookNative(JNIEnv *env, jclass type) {
-    jniEnv = env;
 
+    enableThreadHook();
+}
+
+static bool InitJniEnv(JavaVM *vm) {
+    kJvm = vm;
+    JNIEnv* env = NULL;
+    if (kJvm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK){
+        ALOG("InitJniEnv GetEnv !JNI_OK");
+        return false;
+    }
     kJavaClass = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/dodola/thread/ThreadHook")));
     if (kJavaClass == NULL)  {
         ALOG("InitJniEnv kJavaClass NULL");
-        return;
+        return false;
     }
 
     kMethodGetStack = env->GetStaticMethodID(kJavaClass, "getStack", "()Ljava/lang/String;");
     if (kMethodGetStack == NULL) {
         ALOG("InitJniEnv kMethodGetStack NULL");
-        return;
+        return false;
     }
-
-    enableThreadHook();
+    return true;
 }
 
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved){
+    ALOG("JNI_OnLoad");
+
+
+    if (!InitJniEnv(vm)) {
+        return -1;
+    }
+
+    return JNI_VERSION_1_6;
+}
 

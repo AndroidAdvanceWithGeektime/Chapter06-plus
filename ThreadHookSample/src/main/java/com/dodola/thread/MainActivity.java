@@ -28,6 +28,14 @@ public class MainActivity extends Activity {
                     public void run() {
                         Log.e("HOOOOOOOOK", "thread name:" + Thread.currentThread().getName());
                         Log.e("HOOOOOOOOK", "thread id:" + Thread.currentThread().getId());
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.e("HOOOOOOOOK", "inner thread name:" + Thread.currentThread().getName());
+                                Log.e("HOOOOOOOOK", "inner thread id:" + Thread.currentThread().getId());
+
+                            }
+                        }).start();
                     }
                 }).start();
             }
