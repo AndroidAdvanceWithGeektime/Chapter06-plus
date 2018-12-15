@@ -41,6 +41,7 @@ char *jstringToChars(JNIEnv *env, jstring jstr) {
 
 void printJavaStack() {
     JNIEnv* jniEnv = NULL;
+    // JNIEnv 是绑定线程的，所以这里要重新取
     kJvm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6);
     jstring java_stack = static_cast<jstring>(jniEnv->CallStaticObjectMethod(kJavaClass, kMethodGetStack));
     if (NULL == java_stack) {
